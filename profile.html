@@ -1,0 +1,177 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Student Profile - Great Books Journal</title>
+    <link rel="icon" href="Profile_icon.png">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="styles.css">
+    <style>
+        .profile-container {
+            max-width: 800px;
+            margin: 0 auto;
+            background-color: white;
+            border-radius: 8px;
+            padding: 30px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+        }
+        
+        .back-link {
+            display: inline-block;
+            margin-bottom: 20px;
+            color: #8B4513;
+            text-decoration: none;
+            padding: 8px 16px;
+            background-color: #f5f0e6;
+            border-radius: 4px;
+            transition: all 0.3s;
+        }
+        
+        .back-link:hover {
+            background-color: #D2B48C;
+            color: #5D4037;
+        }
+        
+        .profile-header {
+            text-align: center;
+            margin-bottom: 30px;
+        }
+        
+        .profile-pic {
+            width: 150px;
+            height: 150px;
+            border-radius: 50%;
+            object-fit: cover;
+            border: 3px solid #D2B48C;
+            margin: 0 auto 20px;
+            display: block;
+        }
+        
+        .profile-container h1 {
+            color: #8B4513;
+            margin-bottom: 10px;
+            font-size: 2.2rem;
+        }
+        
+        .section {
+            margin-bottom: 30px;
+        }
+        
+        .section h2 {
+            color: #8B4513;
+            padding-bottom: 5px;
+            border-bottom: 1px solid #D2B48C;
+            margin-bottom: 15px;
+            font-size: 1.4rem;
+        }
+        
+        .info-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 15px;
+        }
+        
+        .info-item {
+            margin-bottom: 10px;
+        }
+        
+        .info-label {
+            font-weight: bold;
+            color: #5D4037;
+        }
+        
+        .courses-list {
+            list-style-type: none;
+            padding: 0;
+        }
+        
+        .courses-list li {
+            padding: 8px 0;
+            border-bottom: 1px solid #eee;
+        }
+        
+        @media (max-width: 600px) {
+            .info-grid {
+                grid-template-columns: 1fr;
+            }
+            
+            .profile-pic {
+                width: 120px;
+                height: 120px;
+            }
+            
+            .profile-container h1 {
+                font-size: 1.8rem;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="profile-container">
+        <a href="index.html" class="back-link">
+            <i class="fas fa-arrow-left"></i> Back to Journal
+        </a>
+        
+        <div class="profile-header">
+            
+            <img src="profile.png" 
+                 alt="Profile Picture" 
+                 class="profile-pic">
+            
+            <h1>Student Profile</h1>
+            <p>Too tired to handle everything</p>
+        </div>
+        
+        <div class="section">
+            <h2>Personal Information</h2>
+            <div class="info-grid">
+                <div class="info-item">
+                    <div class="info-label">Full Name:</div>
+                    <div>John Scantlin B. Cayson</div>
+                </div>
+                <div class="info-item">
+                    <div class="info-label">Student ID:</div>
+                    <div>02000-419960</div>
+                </div>
+                <div class="info-item">
+                    <div class="info-label">Program:</div>
+                    <div>BS Computer Engineering</div>
+                </div>
+                <div class="info-item">
+                    <div class="info-label">Year Level:</div>
+                    <div>2nd Year</div>
+                </div>
+                <div class="info-item">
+                    <div class="info-label">Email:</div>
+                    <div>Cayson.419960@calamba.sti.edu.ph</div>
+                </div>
+                <div class="info-item">
+                    <div class="info-label">Contact:</div>
+                    <div>09911902096</div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="section">
+            <h2>Current Courses</h2>
+            <ul class="courses-list">
+                <li><strong>8194:</strong> Philippine Popular Culture</li>
+                <li><strong>6681:</strong> Great Books</li>
+                <li><strong>6682:</strong> PATHFIT 4 Team Sports</li>
+                <li><strong>6679:</strong> Software Design</li>
+                <li><strong>6680:</strong> Ethics</li>
+                <li><strong>6684:</strong> Engineering Data Analysis</li>
+                <li><strong>6526:</strong> Fundamentals of Electronic Circuits</li>
+                <li><strong>6524:</strong> Numerical Method</li>
+                <li><strong>6683:</strong> Technopreneurship</li>
+            </ul>
+        </div>
+        
+        <div class="section">
+            <h2>Academic Interests</h2>
+            <p>I'm only interested in Him</p>
+        </div>
+    </div>
+</body>
+</html>
