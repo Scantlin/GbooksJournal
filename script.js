@@ -50,7 +50,7 @@ document.addEventListener('DOMContentLoaded', function() {
             },
             '3': {
                 title: 'Annotated Passages - The Green Light Symbolism',
-                imageSrc: 'Performance.jpeg',
+                imageSrc: 'performance.jpeg',
                 fallbackUrl: 'https://images.unsplash.com/photo-1456513080510-7bf3a84b82f8?w=800'
             },
             '4': {
