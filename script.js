@@ -40,24 +40,29 @@ document.addEventListener('DOMContentLoaded', function() {
         // Image details database
         const imageDetails = {
             '1': {
-                imageSrc: 'Image2 (4).jpeg',
-                fallbackUrl: 'https://images.unsplash.com/photo-1544947950-fa07a98d237f?w=800'
+                imageSrc: 'Image2 (4).jpeg'
             },
             '2': {
-                title: 'Long Island\'s Gold Coast - East Egg & West Egg, c.1925',
-                imageSrc: 'Image1 (4).jpeg',
-                fallbackUrl: 'https://images.unsplash.com/photo-1496442226666-8d4d0e62e6e9?w=800'
+                imageSrc: 'Image1 (4).jpeg'
             },
             '3': {
-                title: 'Annotated Passages - The Green Light Symbolism',
-                imageSrc: 'performance.jpeg',
-                fallbackUrl: 'https://images.unsplash.com/photo-1456513080510-7bf3a84b82f8?w=800'
+                imageSrc: 'performance.jpeg'
             },
             '4': {
-                title: 'Character Relationship Map - Social Connections',
-                imageSrc: 'planning.jpeg',
-                fallbackUrl: 'https://images.unsplash.com/photo-1455390582262-044cdead277a?w=800'
+                imageSrc: 'planning.jpeg'
             },
+            '5':{
+                imageSrc: 'Mid1.jpeg'
+            },
+            '6':{
+                imageSrc: 'Mid2.jpeg'
+            },
+            '7':{
+                imageSrc: 'Mid3.jpeg'
+            }, 
+            '8':{
+                imageSrc: 'Mid4.jpeg'
+            }
         };
 
         // Get ALL image cards
