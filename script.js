@@ -62,7 +62,26 @@ document.addEventListener('DOMContentLoaded', function() {
             }, 
             '8':{
                 imageSrc: 'Mid4.jpeg'
+            },
+            '9':{
+                imageSrc: 'prefi1.jpeg'
+            }, 
+            '10': {
+                imageSrc: 'prefi2.jpeg'
+            },
+            '11': {
+                imageSrc: 'prefi3.png'
+            },
+            '12':{
+                imageSrc: 'prefi4.JPG'
+            },
+            '13':{
+                imageSrc: 'prefi5.JPG'
+            },
+            '14':{
+                imageSrc: 'prefi6.JPG'
             }
+
         };
 
         // Get ALL image cards
@@ -82,44 +101,68 @@ document.addEventListener('DOMContentLoaded', function() {
         }
 
         // Function to open modal
-        window.openImageModal = function(imageId) {
-            console.log('Opening modal for image ID:', imageId);
-            
-            const details = imageDetails[imageId];
-            if (!details) {
-                console.error('No details found for image ID:', imageId);
-                return;
-            }
-            
-            const imageSrc = details.imageSrc;
-            const fallbackSrc = details.fallbackUrl;
-            
-            const modalHTML = `
-                <div class="image-modal">
-                    <button class="modal-close-btn" id="modalCloseBtn">
-                        <i class="fas fa-times"></i>
-                    </button>
-                    <div class="modal-content-simple">
-                        <div class="modal-image-container">
-                            <img src="${imageSrc}" 
-                                 alt="${details.title}" 
-                                 class="modal-expanded-image"
-                                 onerror="this.onerror=null; this.src='${fallbackSrc}';">
-                        </div>
-                    </div>
+        // Function to open modal
+window.openImageModal = function(imageId) {
+    console.log('Opening modal for image ID:', imageId);
+    
+    const details = imageDetails[imageId];
+    if (!details) {
+        console.error('No details found for image ID:', imageId);
+        return;
+    }
+    
+    const mediaSrc = details.imageSrc;
+    const fallbackSrc = details.fallbackUrl;
+    
+    // Check if the file is a video (based on extension)
+    const isVideo = mediaSrc && (mediaSrc.endsWith('.mp4') || 
+                                  mediaSrc.endsWith('.webm') || 
+                                  mediaSrc.endsWith('.ogg') ||
+                                  mediaSrc.endsWith('.mov'));
+    
+    let mediaHTML = '';
+    
+    if (isVideo) {
+        // Create video element with controls
+        mediaHTML = `
+            <video class="modal-expanded-video" controls autoplay loop muted>
+                <source src="${mediaSrc}" type="video/mp4">
+                Your browser does not support the video tag.
+            </video>
+        `;
+    } else {
+        // Create img element for images
+        mediaHTML = `
+            <img src="${mediaSrc}" 
+                 alt="${details.title || 'Media'}" 
+                 class="modal-expanded-image"
+                 onerror="this.onerror=null; this.src='${fallbackSrc}';">
+        `;
+    }
+    
+    const modalHTML = `
+        <div class="image-modal">
+            <button class="modal-close-btn" id="modalCloseBtn">
+                <i class="fas fa-times"></i>
+            </button>
+            <div class="modal-content-simple">
+                <div class="modal-image-container">
+                    ${mediaHTML}
                 </div>
-            `;
-            
-            modalOverlay.innerHTML = modalHTML;
-            modalOverlay.classList.add('active');
-            document.body.style.overflow = 'hidden';
-            
-            // Add event listener to the close button AFTER it's in the DOM
-            const closeBtn = document.getElementById('modalCloseBtn');
-            if (closeBtn) {
-                closeBtn.addEventListener('click', closeImageModal);
-            }
-        };
+            </div>
+        </div>
+    `;
+    
+    modalOverlay.innerHTML = modalHTML;
+    modalOverlay.classList.add('active');
+    document.body.style.overflow = 'hidden';
+    
+    // Add event listener to the close button AFTER it's in the DOM
+    const closeBtn = document.getElementById('modalCloseBtn');
+    if (closeBtn) {
+        closeBtn.addEventListener('click', closeImageModal);
+    }
+};
 
         // Function to close modal
         window.closeImageModal = function() {
