@@ -80,6 +80,18 @@ document.addEventListener('DOMContentLoaded', function() {
             },
             '14':{
                 imageSrc: 'prefi6.JPG'
+            },
+            '15':{
+                imageSrc: 'GFinal1.jpg'
+            },
+            '16':{
+                imageSrc: 'Gfinal3.jpg'
+            },
+            '17':{
+                imageSrc: 'GFinal4.jpg'
+            },
+            '18':{
+                imageSrc: 'final2.jpg'
             }
 
         };
