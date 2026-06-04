@@ -1,6 +1,219 @@
 // Wait for the DOM to be fully loaded
 document.addEventListener('DOMContentLoaded', function() {
     'use strict';
+    // ============================================
+// ============================================
+// BACKGROUND MUSIC - MINIMALIST CIRCLE BUTTON
+// PANEL APPEARS EVERY TIME PAGE LOADS
+// ============================================
+function initBackgroundMusic() {
+    const audio = new Audio();
+    audio.loop = true;
+    
+    const musicCircle = document.getElementById('musicToggle');
+    const initPanel = document.getElementById('musicInitPanel');
+    const initVolumeSlider = document.getElementById('initVolumeSlider');
+    const startBtn = document.getElementById('startMusicBtn');
+    const noMusicBtn = document.getElementById('noMusicBtn');
+    
+    let isPlaying = false;
+    let volume = 0.15; // 15% default
+    let musicLoaded = false;
+    let musicSource = null;
+    
+    // Load saved volume from previous session (if any)
+    const savedVolume = localStorage.getItem('bgMusicVolume');
+    if (savedVolume && initVolumeSlider) {
+        initVolumeSlider.value = savedVolume;
+        volume = savedVolume / 100;
+    }
+    
+    // ALWAYS show panel on every load
+    if (initPanel) {
+        initPanel.classList.remove('hidden');
+    }
+    
+    // Function to load and play music
+    function loadAndPlayMusic() {
+        if (musicLoaded) {
+            audio.play().catch(e => console.log('Play error:', e));
+            return;
+        }
+        
+        // Try multiple music sources
+        const musicUrls = [
+            'TuloyParin.mp3'
+        ];
+        
+        let currentUrlIndex = 0;
+        
+        function tryLoadUrl() {
+            if (currentUrlIndex >= musicUrls.length) {
+                console.log('All music sources failed, using web audio fallback');
+                useWebAudioFallback();
+                return;
+            }
+            
+            audio.src = musicUrls[currentUrlIndex];
+            audio.load();
+            
+            audio.addEventListener('canplaythrough', function onCanPlay() {
+                audio.removeEventListener('canplaythrough', onCanPlay);
+                musicLoaded = true;
+                audio.volume = volume;
+                audio.play().then(() => {
+                    console.log('Music playing from source', currentUrlIndex + 1);
+                }).catch(e => {
+                    console.log('Play failed, trying next source');
+                    currentUrlIndex++;
+                    tryLoadUrl();
+                });
+            });
+            
+            audio.addEventListener('error', function() {
+                console.log('Failed to load source', currentUrlIndex + 1);
+                currentUrlIndex++;
+                tryLoadUrl();
+            });
+        }
+        
+        tryLoadUrl();
+    }
+    
+    // Fallback: Web Audio (soft ambient tones)
+    function useWebAudioFallback() {
+        try {
+            const AudioContext = window.AudioContext || window.webkitAudioContext;
+            const audioCtx = new AudioContext();
+            const gainNode = audioCtx.createGain();
+            gainNode.connect(audioCtx.destination);
+            gainNode.gain.value = volume * 0.3;
+            
+            const frequencies = [130.81, 164.81, 196.00, 261.63];
+            const oscillators = [];
+            
+            frequencies.forEach(freq => {
+                const osc = audioCtx.createOscillator();
+                osc.type = 'sine';
+                osc.frequency.value = freq;
+                osc.connect(gainNode);
+                osc.start();
+                oscillators.push(osc);
+            });
+            
+            // Store so we can stop later
+            window.fallbackAudio = { audioCtx, oscillators, gainNode };
+            
+            // Resume context on user interaction
+            if (audioCtx.state === 'suspended') {
+                document.addEventListener('click', function resumeCtx() {
+                    audioCtx.resume();
+                    document.removeEventListener('click', resumeCtx);
+                }, { once: true });
+            }
+            
+            musicLoaded = true;
+            console.log('Using web audio fallback');
+        } catch (e) {
+            console.log('Web audio not supported');
+        }
+    }
+    
+    // Stop fallback audio
+    function stopFallbackAudio() {
+        if (window.fallbackAudio) {
+            window.fallbackAudio.oscillators.forEach(osc => {
+                try { osc.stop(); } catch(e) {}
+            });
+            try { window.fallbackAudio.audioCtx.close(); } catch(e) {}
+            window.fallbackAudio = null;
+        }
+    }
+    
+    // Update circle button appearance
+    function updateButtonAppearance(playing) {
+        const icon = musicCircle.querySelector('i');
+        if (playing) {
+            icon.className = 'fas fa-stop';
+            musicCircle.classList.add('playing');
+            isPlaying = true;
+        } else {
+            icon.className = 'fas fa-play';
+            musicCircle.classList.remove('playing');
+            isPlaying = false;
+        }
+    }
+    
+    // Stop music
+    function stopMusic() {
+        audio.pause();
+        audio.currentTime = 0;
+        stopFallbackAudio();
+        updateButtonAppearance(false);
+    }
+    
+    // Start music
+    function startMusic() {
+        if (audio.src && !musicLoaded) {
+            loadAndPlayMusic();
+        } else if (musicLoaded) {
+            if (window.fallbackAudio) {
+                // Resume web audio if needed
+                if (window.fallbackAudio.audioCtx.state === 'suspended') {
+                    window.fallbackAudio.audioCtx.resume();
+                }
+            } else {
+                audio.play().catch(e => console.log('Play error:', e));
+            }
+        } else {
+            loadAndPlayMusic();
+        }
+        updateButtonAppearance(true);
+    }
+    
+    // Toggle play/stop
+    function toggleMusic() {
+        if (isPlaying) {
+            stopMusic();
+        } else {
+            startMusic();
+        }
+    }
+    
+    // Circle button click
+    if (musicCircle) {
+        musicCircle.addEventListener('click', toggleMusic);
+    }
+    
+    // Start button in panel
+    if (startBtn) {
+        startBtn.addEventListener('click', function() {
+            if (initVolumeSlider) {
+                volume = initVolumeSlider.value / 100;
+                localStorage.setItem('bgMusicVolume', initVolumeSlider.value);
+            }
+            // Hide panel
+            if (initPanel) {
+                initPanel.classList.add('hidden');
+            }
+            startMusic();
+        });
+    }
+    
+    // No thanks button
+    if (noMusicBtn) {
+        noMusicBtn.addEventListener('click', function() {
+            // Just hide panel, don't play anything
+            if (initPanel) {
+                initPanel.classList.add('hidden');
+            }
+            // Make sure circle shows play icon (not playing)
+            updateButtonAppearance(false);
+        });
+    }
+    
+    console.log('Minimalist music player initialized - panel shows every load');
+}
     
     // ============================================
     // TERM TAB SWITCHING
@@ -32,7 +245,7 @@ document.addEventListener('DOMContentLoaded', function() {
             });
         });
     }
-
+    
     // ============================================
     // IMAGE GALLERY MODAL - WITH WORKING X BUTTON
     // ============================================
@@ -88,7 +301,7 @@ document.addEventListener('DOMContentLoaded', function() {
                 imageSrc: 'Gfinal3.jpg'
             },
             '17':{
-                imageSrc: 'GFinal4.jpg'
+                imageSrc: 'GFinal4.jpeg'
             },
             '18':{
                 imageSrc: 'final2.jpg'
@@ -259,6 +472,7 @@ window.openImageModal = function(imageId) {
     initTermTabs();
     initImageGallery();
     initDateDisplay();
+    initBackgroundMusic(); 
     
     console.log('All systems initialized');
 });
