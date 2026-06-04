@@ -398,6 +398,11 @@
     }
 }
 
+/* Smooth fade out for music transition */
+audio {
+    transition: opacity 0.3s ease;
+}
+
 body {
     background-color: #121212;
     color: var(--text-color);

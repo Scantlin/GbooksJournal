@@ -7,8 +7,11 @@ document.addEventListener('DOMContentLoaded', function() {
 // PANEL APPEARS EVERY TIME PAGE LOADS
 // ============================================
 function initBackgroundMusic() {
+    // Store audio globally so other functions can access it
     const audio = new Audio();
     audio.loop = true;
+
+    window.bgAudio = audio;
     
     const musicCircle = document.getElementById('musicToggle');
     const initPanel = document.getElementById('musicInitPanel');
@@ -81,43 +84,43 @@ function initBackgroundMusic() {
     }
     
     // Fallback: Web Audio (soft ambient tones)
-    function useWebAudioFallback() {
-        try {
-            const AudioContext = window.AudioContext || window.webkitAudioContext;
-            const audioCtx = new AudioContext();
-            const gainNode = audioCtx.createGain();
-            gainNode.connect(audioCtx.destination);
-            gainNode.gain.value = volume * 0.3;
+    // function useWebAudioFallback() {
+    //     try {
+    //         const AudioContext = window.AudioContext || window.webkitAudioContext;
+    //         const audioCtx = new AudioContext();
+    //         const gainNode = audioCtx.createGain();
+    //         gainNode.connect(audioCtx.destination);
+    //         gainNode.gain.value = volume * 0.3;
             
-            const frequencies = [130.81, 164.81, 196.00, 261.63];
-            const oscillators = [];
+    //         const frequencies = [130.81, 164.81, 196.00, 261.63];
+    //         const oscillators = [];
             
-            frequencies.forEach(freq => {
-                const osc = audioCtx.createOscillator();
-                osc.type = 'sine';
-                osc.frequency.value = freq;
-                osc.connect(gainNode);
-                osc.start();
-                oscillators.push(osc);
-            });
+    //         frequencies.forEach(freq => {
+    //             const osc = audioCtx.createOscillator();
+    //             osc.type = 'sine';
+    //             osc.frequency.value = freq;
+    //             osc.connect(gainNode);
+    //             osc.start();
+    //             oscillators.push(osc);
+    //         });
             
-            // Store so we can stop later
-            window.fallbackAudio = { audioCtx, oscillators, gainNode };
+    //         // Store so we can stop later
+    //         window.fallbackAudio = { audioCtx, oscillators, gainNode };
             
-            // Resume context on user interaction
-            if (audioCtx.state === 'suspended') {
-                document.addEventListener('click', function resumeCtx() {
-                    audioCtx.resume();
-                    document.removeEventListener('click', resumeCtx);
-                }, { once: true });
-            }
+    //         // Resume context on user interaction
+    //         if (audioCtx.state === 'suspended') {
+    //             document.addEventListener('click', function resumeCtx() {
+    //                 audioCtx.resume();
+    //                 document.removeEventListener('click', resumeCtx);
+    //             }, { once: true });
+    //         }
             
-            musicLoaded = true;
-            console.log('Using web audio fallback');
-        } catch (e) {
-            console.log('Web audio not supported');
-        }
-    }
+    //         musicLoaded = true;
+    //         console.log('Using web audio fallback');
+    //     } catch (e) {
+    //         console.log('Web audio not supported');
+    //     }
+    // }
     
     // Stop fallback audio
     function stopFallbackAudio() {
@@ -143,42 +146,80 @@ function initBackgroundMusic() {
             isPlaying = false;
         }
     }
-    
-    // Stop music
-    function stopMusic() {
+
+    // Reset music state (called when switching terms)
+window.resetMusicState = function() {
+    isPlaying = false;
+    musicLoaded = false;
+    if (audio) {
         audio.pause();
         audio.currentTime = 0;
-        stopFallbackAudio();
-        updateButtonAppearance(false);
+        audio.src = ''; // Clear source to force reload on next play
     }
+    stopFallbackAudio();
+    updateButtonAppearance(false);
+};
     
-    // Start music
-    function startMusic() {
-        if (audio.src && !musicLoaded) {
-            loadAndPlayMusic();
-        } else if (musicLoaded) {
-            if (window.fallbackAudio) {
-                // Resume web audio if needed
-                if (window.fallbackAudio.audioCtx.state === 'suspended') {
-                    window.fallbackAudio.audioCtx.resume();
-                }
-            } else {
-                audio.play().catch(e => console.log('Play error:', e));
+// Start music
+// Start music
+function startMusic() {
+    // Clear any existing audio state
+    stopFallbackAudio();
+    
+    if (audio.src === '' || !musicLoaded) {
+        musicLoaded = false;
+        loadAndPlayMusic();
+    } else if (musicLoaded) {
+        if (window.fallbackAudio) {
+            // Resume web audio if needed
+            if (window.fallbackAudio.audioCtx.state === 'suspended') {
+                window.fallbackAudio.audioCtx.resume();
             }
         } else {
-            loadAndPlayMusic();
+            audio.play().catch(e => {
+                console.log('Play error, reloading:', e);
+                musicLoaded = false;
+                loadAndPlayMusic();
+            });
         }
-        updateButtonAppearance(true);
+    } else {
+        loadAndPlayMusic();
     }
+    updateButtonAppearance(true);
+    window.isMusicPlaying = true;
+}
+
+// Stop music
+function stopMusic() {
+    window.isMusicPlaying = false; // Add this line
+    
+    audio.pause();
+    audio.currentTime = 0;
+    stopFallbackAudio();
+    updateButtonAppearance(false);
+}
     
     // Toggle play/stop
-    function toggleMusic() {
-        if (isPlaying) {
-            stopMusic();
-        } else {
-            startMusic();
-        }
+    // Toggle play/stop
+function toggleMusic() {
+    // If panel is visible, don't toggle - let user use panel
+    const initPanel = document.getElementById('musicInitPanel');
+    if (initPanel && !initPanel.classList.contains('hidden')) {
+        return;
     }
+    
+    if (isPlaying) {
+        stopMusic();
+    } else {
+        // Reset any stale audio state before playing
+        if (audio.src && !musicLoaded) {
+            // Force reload
+            musicLoaded = false;
+            audio.src = '';
+        }
+        startMusic();
+    }
+}
     
     // Circle button click
     if (musicCircle) {
@@ -218,34 +259,95 @@ function initBackgroundMusic() {
     // ============================================
     // TERM TAB SWITCHING
     // ============================================
-    function initTermTabs() {
-        const termTabs = document.querySelectorAll('.term-tab');
-        
-        termTabs.forEach(tab => {
-            tab.addEventListener('click', function() {
-                if (this.classList.contains('locked')) {
-                    return;
-                }
-                
-                document.querySelectorAll('.term-tab').forEach(t => {
-                    t.classList.remove('active');
-                });
-                
-                this.classList.add('active');
-                
-                document.querySelectorAll('.term-content').forEach(content => {
-                    content.classList.remove('active');
-                });
-                
-                const termId = this.getAttribute('data-term');
-                const targetContent = document.getElementById(`${termId}-content`);
-                if (targetContent) {
-                    targetContent.classList.add('active');
-                }
+    // ============================================
+// TERM TAB SWITCHING (with music stop)
+// ============================================
+// ============================================
+// TERM TAB SWITCHING (with music stop)
+// ============================================
+function initTermTabs() {
+    const termTabs = document.querySelectorAll('.term-tab');
+    
+    termTabs.forEach(tab => {
+        tab.addEventListener('click', function() {
+            if (this.classList.contains('locked')) {
+                return;
+            }
+            
+            // STOP MUSIC WHEN SWITCHING TERMS
+            stopAllMusic();
+            
+            document.querySelectorAll('.term-tab').forEach(t => {
+                t.classList.remove('active');
             });
+            
+            this.classList.add('active');
+            
+            document.querySelectorAll('.term-content').forEach(content => {
+                content.classList.remove('active');
+            });
+            
+            const termId = this.getAttribute('data-term');
+            const targetContent = document.getElementById(`${termId}-content`);
+            if (targetContent) {
+                targetContent.classList.add('active');
+            }
         });
+    });
+}
+
+// Helper function to stop all music and reset button state
+function stopAllMusic() {
+    // Stop HTML5 Audio
+    const audioElements = document.querySelectorAll('audio');
+    audioElements.forEach(audio => {
+        audio.pause();
+        audio.currentTime = 0;
+    });
+    
+    // Stop any playing audio from AudioContext (Web Audio)
+    if (window.fallbackAudio) {
+        try {
+            if (window.fallbackAudio.oscillators) {
+                window.fallbackAudio.oscillators.forEach(osc => {
+                    try { osc.stop(); } catch(e) {}
+                });
+            }
+            if (window.fallbackAudio.audioCtx) {
+                window.fallbackAudio.audioCtx.close();
+            }
+        } catch(e) {}
+        window.fallbackAudio = null;
     }
     
+    // Stop the main background audio object if it exists
+    if (window.bgAudio) {
+        try {
+            window.bgAudio.pause();
+            window.bgAudio.currentTime = 0;
+        } catch(e) {}
+    }
+    
+    // RESET BUTTON STATE - THIS FIXES THE DOUBLE CLICK ISSUE
+    const musicCircle = document.getElementById('musicToggle');
+    if (musicCircle) {
+        const icon = musicCircle.querySelector('i');
+        if (icon) {
+            icon.className = 'fas fa-play';
+        }
+        musicCircle.classList.remove('playing');
+    }
+    
+    // Reset playing state flags
+    window.isMusicPlaying = false;
+    
+    // Reset audio loaded flag if needed
+    if (window.resetMusicState) {
+        window.resetMusicState();
+    }
+    
+    console.log('Music stopped and button reset');
+}    
     // ============================================
     // IMAGE GALLERY MODAL - WITH WORKING X BUTTON
     // ============================================
